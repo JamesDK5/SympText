@@ -1,8 +1,0 @@
-# Node
-node_modules/
-npm-debug.log
-# Capacitor
-android/
-ios/
-hwconfig.xml
-capacitor.config.json
