@@ -137,7 +137,7 @@
                     <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest pb-2">About</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400">
                         SympText is a tool that helps you generate a template for your clinical notes from your findings. Tap the symptoms to generate clinical notes in a format that makes it easy to copy across to your respective clinical records app and expand on your patient's history without missing anything.
-                        <br><br>V0.1.1
+                        <br><br>V0.1.2
                         <br><br>Last updated: <span id="lastUpdatedDate"></span>
                         <br><br>Created by James Kirby
                     </p>
@@ -147,6 +147,20 @@
     </main>
 
     <script>
+        // Prevent pull-to-refresh on downward swipe from top
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            this.startY = e.touches[0].pageY;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            const y = e.touches[0].pageY;
+            // If user is at the top and swipes down, prevent default behavior
+            if (window.scrollY === 0 && y > this.startY) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
         (function() {
             const form = document.getElementById('assessmentForm');
             const output = document.getElementById('generatedText');
