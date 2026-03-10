@@ -71,7 +71,7 @@
                     ]},
                     { id: 'Gastrointestinal', title: 'Gastrointestinal & Urinary', color: 'text-emerald-500', findings: ['Abdominal Pain', 'Nausea', 'Vomiting', 'Haematemesis', 'Guarding', 'Rebound Tenderness', 'Distension', 
                         {name: 'Bowels', special: 'subheading'}, 
-                        'Diarrhoea', 'Constipation', 'Melena', 
+                        'Constipation', 'Diarrhoea', 'Melena', 
                         {name: 'Urinary', special: 'subheading'},
                         'Dysuria', 'Frequency', 'Urgency', 'Haematuria'
                     ]},
@@ -81,14 +81,14 @@
                 sections.forEach((s, sIdx) => {
                     let html = `
                     <section class="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm overflow-hidden" data-category="${s.id}">
-                        <div class="flex items-center justify-between p-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors" data-toggle-section>
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors" data-toggle-section>
                             <div class="flex items-center gap-4">
                                 <span class="${s.color} transition-transform duration-200" data-chevron>▶</span>
                                 <h2 class="text-lg font-bold">${s.title}</h2>
                             </div>
                             <button class="reset-button text-xs font-bold bg-slate-100 dark:bg-gray-800 px-4 py-2 rounded-lg active:scale-90" data-category-reset="${s.id}">Reset</button>
                         </div>
-                        <div class="p-5 border-t dark:border-gray-800 space-y-5 hidden" data-section-content>`;
+                        <div class="p-5 border-t dark:border-gray-800 space-y-2 hidden" data-section-content>`;
                     
                     s.findings.forEach((f, fIdx) => {
                         const name = typeof f === 'object' ? f.name : f;
@@ -181,7 +181,7 @@
             }
 
             form.addEventListener('change', updateText);
-            form.addEventListener('click', (e) => {
+                form.addEventListener('click', (e) => {
                 // Feature: Unclick red/green to revert to N/A
                 if (e.target.tagName === 'LABEL') {
                     const input = document.getElementById(e.target.getAttribute('for'));
@@ -204,6 +204,15 @@
                         const content = header.nextElementSibling, chevron = header.querySelector('[data-chevron]');
                         const isHidden = content.classList.toggle('hidden');
                         chevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
+
+                        // Scroll the clicked category heading to the top (below fixed header)
+                        const headerOffset = 72; // approximate height of the fixed top header
+                        const rect = header.getBoundingClientRect();
+                        const offsetTop = rect.top + window.scrollY - headerOffset;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
                     }
                 }
             });
