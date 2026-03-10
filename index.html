@@ -60,7 +60,7 @@
                     { id: 'Cardiac', title: 'Cardiac', color: 'text-red-500', findings: [
                         'Chest pain', 'Palpitations', 'Nausea', 'Vomiting', 'Pallor', 'Cyanosis', 'Diaphoresis'] },
                     { id: 'Neurological', title: 'Neurological', color: 'text-purple-500', findings: [
-                        'Headache', 'Numbness', 'Tingling', 'Dizziness', 'Weakness', 'Balance problems',
+                        'Headache', 'Dizziness', 'Weakness', 'Balance problems', 'Numbness', 'Tingling',
                         {name: 'Stroke', special: 'subheading'},
                         {name: 'FAST', special: 'fast'}, 'Facial weakness', 'Arm weakness', 'Leg weakness', 'Speech difficulty',
                         {name: 'Consciousness', special: 'subheading'},
@@ -121,26 +121,29 @@
         </div>
 
         <div class="fixed bottom-0 left-0 w-full lg:static lg:col-span-5 xl:col-span-4 z-40">
-            <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl lg:backdrop-blur-none border-t lg:border border-slate-200 dark:border-gray-800 p-5 lg:p-6 lg:rounded-2xl lg:sticky lg:top-24 lg:shadow-xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
-                <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-4 lg:hidden"></div>
-                
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest">Clinical Notes</h3>
-                    <div id="wordCount" class="text-[10px] font-mono opacity-50">0 CHARS</div>
+            <div class="space-y-4 lg:sticky lg:top-24">
+                <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl lg:backdrop-blur-none border-t lg:border border-slate-200 dark:border-gray-800 p-5 lg:p-6 lg:rounded-2xl lg:shadow-xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
+                    <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-4 lg:hidden"></div>
+                    
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest">Clinical Notes</h3>
+                        <div id="wordCount" class="text-[10px] font-mono opacity-50">0 CHARS</div>
+                    </div>
+                    <textarea id="generatedText" class="w-full h-32 lg:h-[420px] bg-slate-50/50 dark:bg-black/30 border border-slate-200 dark:border-gray-800 rounded-xl p-4 text-base font-medium leading-relaxed focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none" readonly placeholder="Tap findings to generate..."></textarea>
+                    <button id="copyButton" class="w-full mt-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 touch-manipulation">Copy to clipboard</button>
                 </div>
-                <textarea id="generatedText" class="w-full h-32 lg:h-[420px] bg-slate-50/50 dark:bg-black/30 border border-slate-200 dark:border-gray-800 rounded-xl p-4 text-base font-medium leading-relaxed focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none" readonly placeholder="Tap findings to generate..."></textarea>
-                <button id="copyButton" class="w-full mt-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 touch-manipulation">Copy to clipboard</button>
+
+                <div class="bg-white/95 dark:bg-gray-900/95 border border-slate-200 dark:border-gray-800 p-5 lg:p-6 rounded-2xl lg:shadow-xl">
+                    <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest pb-2">About</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
+                        SympText is a tool that helps you generate a template for your clinical notes from your findings. Tap the symptoms to generate clinical notes in a format that makes it easy to copy across to your respective clinical records app and expand on your patient's history without missing anything.
+                        <br><br>V0.1.1
+                        <br><br>Last updated: <span id="lastUpdatedDate"></span>
+                        <br><br>Created by James Kirby
+                    </p>
+                </div>
             </div>
         </div>
-
-        <div class="mt-4 lg:col-span-5 lg:col-start-8 xl:col-span-4 xl:col-start-9">
-            <div class="bg-white/95 dark:bg-gray-900/95 border border-slate-200 dark:border-gray-800 p-5 lg:p-6 rounded-2xl lg:shadow-xl">
-              <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest pb-2">About</h3>
-              <p class="text-sm text-slate-600 dark:text-slate-400">
-                SympText is a tool that helps you generate clinical notes from your patient's findings.
-              </p>
-            </div>
-          </div>
     </main>
 
     <script>
@@ -148,6 +151,16 @@
             const form = document.getElementById('assessmentForm');
             const output = document.getElementById('generatedText');
             const wordCount = document.getElementById('wordCount');
+            const lastUpdatedEl = document.getElementById('lastUpdatedDate');
+
+            if (lastUpdatedEl) {
+                const modified = new Date(document.lastModified);
+                lastUpdatedEl.textContent = modified.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
 
             function updateText() {
                 let finalNarrative = "";
