@@ -16,6 +16,12 @@
         }
         .radio-label:active { transform: scale(0.96); opacity: 0.9; }
 
+        .arrow-label {
+            font-size: 1rem;
+            line-height: 1;
+            font-weight: 500;
+        }
+
         /* Light Mode Colors */
         .btn-red { border-color: #fee2e2; background-color: #fef2f2; color: #991b1b; }
         input:checked + .btn-red { background-color: #fca5a5; border-color: #ef4444; font-weight: 700; color: #7f1d1d; }
@@ -60,7 +66,7 @@
                     { id: 'Cardiac', title: 'Cardiac', color: 'text-red-500', findings: [
                         'Chest pain', 'Palpitations', 'Nausea', 'Vomiting', 'Pallor', 'Cyanosis', 'Diaphoresis'] },
                     { id: 'Neurological', title: 'Neurological', color: 'text-purple-500', findings: [
-                        'Headache', 'Dizziness', 'Weakness', 'Balance problems', 'Numbness', 'Tingling',
+                        'Headache', 'Dizziness', 'Weakness', 'Balance problems', 'Numbness', 'Tingling', 'Photosensitivity',
                         {name: 'Stroke', special: 'subheading'},
                         {name: 'FAST', special: 'fast'}, 'Facial weakness', 'Arm weakness', 'Leg weakness', 'Speech difficulty',
                         {name: 'Consciousness', special: 'subheading'},
@@ -70,11 +76,17 @@
                         'Bleeding', 'Bruising', 'Head injury', 'Epistaxis', 'C-spine tenderness', 'Chest wall injury', 'Swelling', 'Deformity', 'Tenderness', 'Crepitus', 
                         {name: 'Weight-bearing', special: 'wb'}, {name: 'Altered Movement', special: 'alt'}, {name: 'Altered Sensation', special: 'alt'}, {name: 'Altered Circulation', special: 'alt'}
                     ]},
-                    { id: 'Gastrointestinal', title: 'Gastrointestinal & Urinary', color: 'text-emerald-500', findings: ['Abdominal Pain', 'Nausea', 'Vomiting', 'Haematemesis', 'Guarding', 'Rebound Tenderness', 'Distension', 
+                    { id: 'Abdominal', title: 'Abdominal', color: 'text-emerald-500', findings: ['Abdominal Pain', 'Nausea', 'Vomiting', 'Haematemesis', 
+                        {name: 'Inspection', special: 'subheading'},
+                        'Distension',
+                        {name: 'Auscultation', special: 'subheading'},
+                        'Bowel sounds',
+                        {name: 'Palpation', special: 'subheading'},
+                        'Tenderness', 'Guarding', 'Hardness', 'Rebound Tenderness',
                         {name: 'Bowels', special: 'subheading'}, 
                         'Constipation', 'Diarrhoea', 'Melena', 
                         {name: 'Urinary', special: 'subheading'},
-                        'Dysuria', 'Frequency', 'Urgency', 'Haematuria'
+                        'Dysuria', {name: 'Frequency', special: 'freq'}, {name: 'Urgency', special: 'urg'}, 'Odour', 'Cloudiness', 'Haematuria'
                     ]},
                     { id: 'GeneralSkin', title: 'General & Skin', color: 'text-slate-500', findings: ['Fever', 'Rigors', 'Rash', 'Laceration', 'Abrasion'] }
                 ];
@@ -104,8 +116,55 @@
                             return; 
                         }
 
+                        // Stroke detail findings (only shown when FAST is positive/negative)
+                        const isStrokeDetail = s.id === 'Neurological' && ['Facial weakness', 'Arm weakness', 'Leg weakness', 'Speech difficulty'].includes(name);
+                        let rowClasses = "grid grid-cols-1 md:grid-cols-3 gap-3 items-center";
+                        let extraAttrs = "";
+                        if (isStrokeDetail) {
+                            rowClasses += " hidden";
+                            extraAttrs = ' data-stroke-detail="1"';
+                        }
+
+                        // Special control layout for urinary Frequency
+                        if (spec === 'freq') {
+                            html += `
+                        <div class="${rowClasses}" data-finding="${name}" data-special="${spec}"${extraAttrs}>
+                            <span class="font-medium text-slate-600 dark:text-slate-400 text-sm">${name}</span>
+                            <div class="flex gap-2 md:col-span-2">
+                                <input type="radio" id="${idBase}_inc" name="${idBase}" value="increased" class="hidden">
+                                <label for="${idBase}_inc" class="radio-label arrow-label btn-red">▲</label>
+                                <input type="radio" id="${idBase}_dec" name="${idBase}" value="decreased" class="hidden">
+                                <label for="${idBase}_dec" class="radio-label arrow-label btn-red">▼</label>
+                                <input type="radio" id="${idBase}_norm" name="${idBase}" value="normal" class="hidden">
+                                <label for="${idBase}_norm" class="radio-label btn-green">Normal</label>
+                                <input type="radio" id="${idBase}_na" name="${idBase}" value="irrelevant" class="hidden" checked>
+                                <label for="${idBase}_na" class="radio-label btn-gray">N/A</label>
+                            </div>
+                        </div>`;
+                            return;
+                        }
+
+                        // Special control layout for urinary Urgency
+                        if (spec === 'urg') {
+                            html += `
+                        <div class="${rowClasses}" data-finding="${name}" data-special="${spec}"${extraAttrs}>
+                            <span class="font-medium text-slate-600 dark:text-slate-400 text-sm">${name}</span>
+                            <div class="flex gap-2 md:col-span-2">
+                                <input type="radio" id="${idBase}_inc" name="${idBase}" value="increased" class="hidden">
+                                <label for="${idBase}_inc" class="radio-label arrow-label btn-red">▲</label>
+                                <input type="radio" id="${idBase}_dec" name="${idBase}" value="decreased" class="hidden">
+                                <label for="${idBase}_dec" class="radio-label arrow-label btn-red">▼</label>
+                                <input type="radio" id="${idBase}_norm" name="${idBase}" value="normal" class="hidden">
+                                <label for="${idBase}_norm" class="radio-label btn-green">Normal</label>
+                                <input type="radio" id="${idBase}_na" name="${idBase}" value="irrelevant" class="hidden" checked>
+                                <label for="${idBase}_na" class="radio-label btn-gray">N/A</label>
+                            </div>
+                        </div>`;
+                            return;
+                        }
+
                         html += `
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center" data-finding="${name}" data-special="${spec}">
+                        <div class="${rowClasses}" data-finding="${name}" data-special="${spec}"${extraAttrs}>
                             <span class="font-medium text-slate-600 dark:text-slate-400 text-sm">${name}</span>
                             <div class="flex gap-2 md:col-span-2">
                                 <input type="radio" id="${idBase}_p" name="${idBase}" value="positive" class="hidden"><label for="${idBase}_p" class="radio-label btn-red">${spec==='fast'?'Pos':(spec==='orient'?'No':(spec==='wb'?'No':'Yes'))}</label>
@@ -133,11 +192,11 @@
                     <button id="copyButton" class="w-full mt-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 active:scale-[0.97] transition-all flex items-center justify-center gap-3 touch-manipulation">Copy to clipboard</button>
                 </div>
 
-                <div class="bg-white/95 dark:bg-gray-900/95 border border-slate-200 dark:border-gray-800 p-5 lg:p-6 rounded-2xl lg:shadow-xl">
+                <div class="hidden lg:block bg-white/95 dark:bg-gray-900/95 border border-slate-200 dark:border-gray-800 p-5 lg:p-6 rounded-2xl lg:shadow-xl">
                     <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest pb-2">About</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400">
-                        SympText is a tool that helps you generate a template for your clinical notes from your findings. Tap the symptoms to generate clinical notes in a format that makes it easy to copy across to your respective clinical records app and expand on your patient's history without missing anything.
-                        <br><br>V0.1.2
+                        SympText is a tool that helps you generate a template for your clinical notes from your findings. Tap the symptoms to generate clinical notes in a format that makes it easy to copy across to your respective clinical records and expand on your patient's history without missing anything.
+                        <br><br>V0.1.3
                         <br><br>Last updated: <span id="lastUpdatedDate"></span>
                         <br><br>Created by James Kirby
                     </p>
@@ -145,6 +204,19 @@
             </div>
         </div>
     </main>
+
+    <!-- Mobile-only About card at very bottom -->
+    <div class="block lg:hidden px-4 pb-6">
+        <div class="bg-white/95 dark:bg-gray-900/95 border border-slate-200 dark:border-gray-800 p-5 rounded-2xl shadow-lg">
+            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-widest pb-2">About</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+                SympText is a tool that helps you generate a template for your clinical notes from your findings. Tap the symptoms to generate clinical notes in a format that makes it easy to copy across to your respective clinical records and expand on your patient's history without missing anything.
+                <br><br>V0.1.3
+                <br><br>Last updated: <span id="lastUpdatedDate_mobile"></span>
+                <br><br>Created by James Kirby
+            </p>
+        </div>
+    </div>
 
     <script>
         // Prevent pull-to-refresh on downward swipe from top
@@ -166,13 +238,40 @@
             const output = document.getElementById('generatedText');
             const wordCount = document.getElementById('wordCount');
             const lastUpdatedEl = document.getElementById('lastUpdatedDate');
+            const lastUpdatedMobileEl = document.getElementById('lastUpdatedDate_mobile');
 
-            if (lastUpdatedEl) {
+            if (lastUpdatedEl || lastUpdatedMobileEl) {
                 const modified = new Date(document.lastModified);
-                lastUpdatedEl.textContent = modified.toLocaleDateString(undefined, {
+                const formatted = modified.toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
+                });
+                if (lastUpdatedEl) lastUpdatedEl.textContent = formatted;
+                if (lastUpdatedMobileEl) lastUpdatedMobileEl.textContent = formatted;
+            }
+
+            // Show/hide detailed stroke findings based on FAST selection
+            function updateStrokeVisibility() {
+                const neuroSection = document.querySelector('section[data-category="Neurological"]');
+                if (!neuroSection) return;
+
+                const fastRow = neuroSection.querySelector('[data-special="fast"]');
+                if (!fastRow) return;
+
+                const fastChecked = fastRow.querySelector('input:checked');
+                const fastVal = fastChecked ? fastChecked.value : 'irrelevant';
+
+                const strokeRows = neuroSection.querySelectorAll('[data-stroke-detail="1"]');
+
+                strokeRows.forEach(row => {
+                    if (fastVal === 'positive' || fastVal === 'negative') {
+                        // Show stroke detail rows when FAST is explicitly tested
+                        row.classList.remove('hidden');
+                    } else {
+                        // Hide when FAST = N/A
+                        row.classList.add('hidden');
+                    }
                 });
             }
 
@@ -181,26 +280,301 @@
                 document.querySelectorAll('section[data-category]').forEach(section => {
                     const categoryName = section.dataset.category;
                     const pos = [], neg = [];
+
+                    // Special handling for Neurological FAST and stroke findings
+                    const isNeurological = categoryName === 'Neurological';
+                    const strokeFindingNames = ['Facial weakness', 'Arm weakness', 'Leg weakness', 'Speech difficulty'];
+                    const strokePos = [];
+                    const strokeNeg = [];
+                    let fastStatus = null; // 'positive' | 'negative' | null
+
+                    // Special handling for Abdominal nausea/vomiting/haematemesis and urinary findings
+                    const isAbdominal = categoryName === 'Abdominal';
+                    let nauseaStatus = null;       // 'positive' | 'negative' | 'irrelevant' | null
+                    let vomitingStatus = null;
+                    let haematemesisStatus = null;
+                    let dysuriaStatus = null;
+                    const urinaryAssocPos = [];    // texts to group after "Dysuria - "
+                    const urinaryAssocNeg = [];    // negative/normal texts to group with "No dysuria - "
+
                     section.querySelectorAll('[data-finding]').forEach(row => {
-                        const name = row.dataset.finding, spec = row.dataset.special, val = row.querySelector('input:checked').value;
+                        const name = row.dataset.finding;
+                        const spec = row.dataset.special;
+                        const val = row.querySelector('input:checked').value;
+
+                        const isStrokeFinding = isNeurological && strokeFindingNames.includes(name);
+                        const isNausea = isAbdominal && name === 'Nausea';
+                        const isVomiting = isAbdominal && name === 'Vomiting';
+                        const isHaematemesis = isAbdominal && name === 'Haematemesis';
+                        const isDysuria = isAbdominal && name === 'Dysuria';
+                        const isUrinaryAssocSimple = isAbdominal && ['Odour', 'Cloudiness', 'Haematuria'].includes(name);
+
+                        // Track Abdominal statuses but let generic logic run,
+                        // so we can regroup them later.
+                        if (isNausea) nauseaStatus = val;
+                        if (isVomiting) vomitingStatus = val;
+                        if (isHaematemesis) haematemesisStatus = val;
+                        if (isDysuria) dysuriaStatus = val;
+
+                        // Special handling for urinary Frequency
+                        if (spec === 'freq') {
+                            if (val === 'increased') {
+                                pos.push('Increased frequency');
+                                if (isAbdominal) urinaryAssocPos.push('Increased frequency');
+                            } else if (val === 'decreased') {
+                                pos.push('Decreased frequency');
+                                if (isAbdominal) urinaryAssocPos.push('Decreased frequency');
+                            } else if (val === 'normal') {
+                                const txt = 'Normal frequency';
+                                neg.push(txt);
+                                if (isAbdominal) urinaryAssocNeg.push(txt);
+                            }
+                            return;
+                        }
+
+                        // Special handling for urinary Urgency
+                        if (spec === 'urg') {
+                            if (val === 'increased') {
+                                pos.push('Increased urgency');
+                                if (isAbdominal) urinaryAssocPos.push('Increased urgency');
+                            } else if (val === 'decreased') {
+                                pos.push('Decreased urgency');
+                                if (isAbdominal) urinaryAssocPos.push('Decreased urgency');
+                            } else if (val === 'normal') {
+                                const txt = 'Normal urgency';
+                                neg.push(txt);
+                                if (isAbdominal) urinaryAssocNeg.push(txt);
+                            }
+                            return;
+                        }
+
                         if (val === 'positive') {
-                            if (spec === 'fast') pos.push("FAST positive");
-                            else if (spec === 'orient') pos.push("Not oriented to " + name.split('- ')[1].toLowerCase());
-                            else if (spec === 'wb') pos.push("Unable to weight-bear");
-                            else if (spec === 'alt') pos.push(name);
-                            else pos.push(name);
+                            if (spec === 'fast') {
+                                fastStatus = 'positive';
+                            } else if (isStrokeFinding) {
+                                // When FAST is positive, group stroke positives under FAST.
+                                // Otherwise, treat them as standard positive neurological findings.
+                                if (fastStatus === 'positive') {
+                                    strokePos.push(name);
+                                } else {
+                                    pos.push(name);
+                                }
+                            } else if (spec === 'orient') {
+                                pos.push("Not oriented to " + name.split('- ')[1].toLowerCase());
+                            } else if (spec === 'wb') {
+                                pos.push("Unable to weight-bear");
+                            } else if (spec === 'alt') {
+                                pos.push(name);
+                            } else {
+                                pos.push(name);
+                                if (isUrinaryAssocSimple && isAbdominal) {
+                                    urinaryAssocPos.push(name);
+                                }
+                            }
                         } else if (val === 'negative') {
-                            if (spec === 'fast') neg.push("FAST negative");
-                            else if (spec === 'orient') neg.push("Oriented to " + name.split('- ')[1].toLowerCase());
-                            else if (spec === 'wb') neg.push("Able to weight-bear");
-                            else if (spec === 'alt') neg.push("Normal " + name.split(' ')[1].toLowerCase());
-                            else neg.push("No " + name.toLowerCase());
+                            if (spec === 'fast') {
+                                fastStatus = 'negative';
+                            } else if (isStrokeFinding) {
+                                // When FAST is negative, group stroke negatives under FAST negative.
+                                // Otherwise, treat them as standard negative neurological findings.
+                                const negText = "No " + name.toLowerCase();
+                                if (fastStatus === 'negative') {
+                                    strokeNeg.push(negText);
+                                } else {
+                                    neg.push(negText);
+                                }
+                            } else if (spec === 'orient') {
+                                neg.push("Oriented to " + name.split('- ')[1].toLowerCase());
+                            } else if (spec === 'wb') {
+                                neg.push("Able to weight-bear");
+                            } else if (spec === 'alt') {
+                                neg.push("Normal " + name.split(' ')[1].toLowerCase());
+                            } else {
+                                const negText = "No " + name.toLowerCase();
+                                neg.push(negText);
+                                if (isAbdominal && (isDysuria || isUrinaryAssocSimple)) {
+                                    urinaryAssocNeg.push(negText);
+                                }
+                            }
                         }
                     });
+
+                    // Build grouped FAST + stroke findings for Neurological section
+                    if (isNeurological) {
+                        if (fastStatus === 'positive') {
+                            if (strokePos.length) {
+                                pos.push("FAST positive - " + strokePos.join(", "));
+                            } else {
+                                pos.push("FAST positive");
+                            }
+                        } else if (fastStatus === 'negative') {
+                            if (strokeNeg.length) {
+                                neg.push("FAST negative - " + strokeNeg.join(", "));
+                            } else {
+                                neg.push("FAST negative");
+                            }
+                        }
+                    }
+
+                    // Build grouped nausea/vomiting/haematemesis + urinary findings for Abdominal section
+                    if (isAbdominal) {
+                        const allTracked =
+                            nauseaStatus !== null &&
+                            vomitingStatus !== null &&
+                            haematemesisStatus !== null;
+
+                        if (allTracked) {
+                            const allPositive =
+                                nauseaStatus === 'positive' &&
+                                vomitingStatus === 'positive' &&
+                                haematemesisStatus === 'positive';
+                            const allNegative =
+                                nauseaStatus === 'negative' &&
+                                vomitingStatus === 'negative' &&
+                                haematemesisStatus === 'negative';
+
+                            if (allPositive) {
+                                // All three positive: group as "Nausea and vomiting - Haematemesis"
+                                const removeNames = ['Nausea', 'Vomiting', 'Haematemesis'];
+                                for (const n of removeNames) {
+                                    const idx = pos.indexOf(n);
+                                    if (idx !== -1) pos.splice(idx, 1);
+                                }
+                                pos.push("Nausea and vomiting - Haematemesis");
+                            } else if (
+                                vomitingStatus === 'positive' &&
+                                haematemesisStatus === 'positive'
+                            ) {
+                                // Vomiting + Haematemesis positive (regardless of nausea): "Vomiting - Haematemesis"
+                                const removeNames = ['Vomiting', 'Haematemesis'];
+                                for (const n of removeNames) {
+                                    const idx = pos.indexOf(n);
+                                    if (idx !== -1) pos.splice(idx, 1);
+                                }
+                                pos.push("Vomiting - Haematemesis");
+                            } else if (allNegative) {
+                                // All three negative: group as "No nausea or vomiting. No haematemesis"
+                                const negPhrases = [
+                                    'No nausea',
+                                    'No vomiting',
+                                    'No haematemesis'
+                                ];
+                                for (const phrase of negPhrases) {
+                                    const idx = neg.indexOf(phrase);
+                                    if (idx !== -1) neg.splice(idx, 1);
+                                }
+                                neg.push("No nausea or vomiting. No haematemesis");
+                            }
+                        }
+
+                        // Auto-set Dysuria based on only-positive / only-negative urinary findings when it is N/A
+                        const hasUrinaryPos = urinaryAssocPos.length > 0;
+                        const hasUrinaryNeg = urinaryAssocNeg.length > 0;
+                        if ((!dysuriaStatus || dysuriaStatus === 'irrelevant') && (hasUrinaryPos || hasUrinaryNeg)) {
+                            const dysuriaRow = section.querySelector('[data-finding="Dysuria"]');
+                            if (dysuriaRow) {
+                                const yesInput = dysuriaRow.querySelector('input[value="positive"]');
+                                const noInput = dysuriaRow.querySelector('input[value="negative"]');
+                                const naInput = dysuriaRow.querySelector('input[value="irrelevant"]');
+
+                                // Only negatives -> auto "No dysuria"
+                                if (hasUrinaryNeg && !hasUrinaryPos && noInput) {
+                                    if (naInput) naInput.checked = false;
+                                    noInput.checked = true;
+                                    dysuriaStatus = 'negative';
+                                    const txt = 'No dysuria';
+                                    if (!neg.includes(txt)) {
+                                        neg.push(txt);
+                                        urinaryAssocNeg.push(txt);
+                                    }
+                                }
+                                // Only positives -> auto "Dysuria"
+                                else if (hasUrinaryPos && !hasUrinaryNeg && yesInput) {
+                                    if (naInput) naInput.checked = false;
+                                    yesInput.checked = true;
+                                    dysuriaStatus = 'positive';
+                                    const txt = 'Dysuria';
+                                    if (!pos.includes(txt)) {
+                                        pos.push(txt);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Group urinary findings with Dysuria
+                        const anyUrinaryPos = dysuriaStatus === 'positive' || urinaryAssocPos.length > 0;
+                        const anyUrinaryNeg = dysuriaStatus === 'negative' || urinaryAssocNeg.length > 0;
+                        const allUrinaryNegative =
+                            dysuriaStatus === 'negative' &&
+                            urinaryAssocPos.length === 0 &&
+                            urinaryAssocNeg.length > 0;
+
+                        if (allUrinaryNegative) {
+                            // All urinary findings negative -> grouped negative phrase
+                            const dysNeg = 'No dysuria';
+                            const dysNegIdx = neg.indexOf(dysNeg);
+                            if (dysNegIdx !== -1) neg.splice(dysNegIdx, 1);
+
+                            // Remove all urinary negative phrases from neg
+                            urinaryAssocNeg.forEach(txt => {
+                                const idx = neg.indexOf(txt);
+                                if (idx !== -1) neg.splice(idx, 1);
+                            });
+
+                            // Build "No dysuria - No odour, no haematuria" style string
+                            const assocWithoutDys = urinaryAssocNeg.filter(
+                                txt => txt.toLowerCase() !== 'no dysuria'
+                            );
+
+                            let grouped;
+                            if (assocWithoutDys.length) {
+                                const formatted = assocWithoutDys.map((txt, i) =>
+                                    i === 0 ? txt : txt.replace(/^No /, 'no ')
+                                );
+                                grouped = dysNeg + " - " + formatted.join(", ");
+                            } else {
+                                grouped = dysNeg;
+                            }
+                            neg.push(grouped);
+                        } else if (dysuriaStatus && (urinaryAssocPos.length || urinaryAssocNeg.length)) {
+                            // Mixed or positive urinary findings -> group before //
+                            const dysPos = 'Dysuria';
+                            const dysNeg = 'No dysuria';
+
+                            // Remove standalone Dysuria / No dysuria
+                            let idx = pos.indexOf(dysPos);
+                            if (idx !== -1) pos.splice(idx, 1);
+                            idx = neg.indexOf(dysNeg);
+                            if (idx !== -1) neg.splice(idx, 1);
+
+                            // Remove individual associated urinary entries from pos/neg
+                            urinaryAssocPos.forEach(txt => {
+                                const i = pos.indexOf(txt);
+                                if (i !== -1) pos.splice(i, 1);
+                            });
+                            urinaryAssocNeg.forEach(txt => {
+                                const i = neg.indexOf(txt);
+                                if (i !== -1) neg.splice(i, 1);
+                            });
+
+                            const combined = [...urinaryAssocPos, ...urinaryAssocNeg];
+                            if (combined.length) {
+                                const formatted = combined.map((txt, i) =>
+                                    i === 0 ? txt : txt.replace(/^No /, 'no ')
+                                );
+                                const heading = dysuriaStatus === 'negative' ? dysNeg : dysPos;
+                                pos.push(heading + " - " + formatted.join(", "));
+                            }
+                        }
+                    }
+
                     if (pos.length || neg.length) {
                         let line = `${categoryName}: `;
-                        if (pos.length && neg.length) line += pos.join(". ") + ". // " + neg.join(". ") + ".";
-                        else line += [...pos, ...neg].join(". ") + ".";
+                        if (pos.length && neg.length) {
+                            line += pos.join(". ") + ". // " + neg.join(". ") + ".";
+                        } else {
+                            line += [...pos, ...neg].join(". ") + ".";
+                        }
                         finalNarrative += line + "\n\n";
                     }
                 });
@@ -208,8 +582,15 @@
                 wordCount.innerText = output.value.length + " CHARS";
             }
 
-            form.addEventListener('change', updateText);
-                form.addEventListener('click', (e) => {
+            // Initial visibility for stroke detail rows
+            updateStrokeVisibility();
+
+            form.addEventListener('change', () => {
+                updateStrokeVisibility();
+                updateText();
+            });
+
+            form.addEventListener('click', (e) => {
                 // Feature: Unclick red/green to revert to N/A
                 if (e.target.tagName === 'LABEL') {
                     const input = document.getElementById(e.target.getAttribute('for'));
