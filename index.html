@@ -206,7 +206,7 @@
                         chevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
 
                         // Scroll the clicked category heading to the top (below fixed header)
-                        const headerOffset = 72; // approximate height of the fixed top header
+                        const headerOffset = 86; // approximate height of the fixed top header
                         const rect = header.getBoundingClientRect();
                         const offsetTop = rect.top + window.scrollY - headerOffset;
                         window.scrollTo({
